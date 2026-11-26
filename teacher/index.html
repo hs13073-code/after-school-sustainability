@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>東興國中九年級自習系統 - 輪值人員點名與違規登記系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; background-color: #f1f5f9; }
+  </style>
+</head>
+<body class="text-slate-800">
+  <!-- 頂部導覽列 -->
+  <header class="bg-slate-900 text-white shadow-md">
+    <div class="max-w-5xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <span id="schoolYearBadge" class="inline-block bg-slate-700 text-slate-200 text-xs font-semibold px-2.5 py-1 rounded-full mb-1">輪值人員專區</span>
+        <h1 class="text-xl sm:text-2xl font-bold tracking-wide">東興國中自習系統 — 輪值老師點名與違規管理</h1>
+        <p class="text-slate-300 text-sm mt-0.5">教室點名 / 當日請假名單 / 違規記點（滿3點自動退班通知）</p>
+      </div>
+      <nav class="flex flex-wrap gap-2 text-sm">
+        <a href="../index.html" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg transition">自習報名</a>
+        <a href="../leave/index.html" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg transition">家長請假</a>
+        <a href="./index.html" class="bg-white text-slate-900 font-semibold px-3 py-1.5 rounded-lg shadow-sm">輪值老師系統</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+    <!-- 輪值老師登入區塊 -->
+    <section id="loginSection" class="max-w-md mx-auto bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden mt-6">
+      <div class="bg-slate-800 text-white px-6 py-4">
+        <h2 class="text-lg font-bold">輪值人員登入</h2>
+        <p class="text-xs text-slate-300 mt-0.5">請使用教務處配發之輪值帳號與密碼登入</p>
+      </div>
+      <form id="loginForm" class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1">輪值帳號</label>
+          <input type="text" id="tUsername" required placeholder="例如：teacher01"
+            class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-700" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1">登入密碼</label>
+          <input type="password" id="tPassword" required placeholder="請輸入密碼"
+            class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-700" />
+        </div>
+        <button type="submit" id="btnLogin"
+          class="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow transition">
+          登入輪值系統
+        </button>
+      </form>
+    </section>
+
+    <!-- 登入後主操作區 -->
+    <section id="dashboardSection" class="hidden space-y-6">
+      <!-- 老師身分列與自行修改密碼 -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold">師</span>
+          <div>
+            <div class="font-bold text-slate-900" id="teacherWelcome">歡迎登入</div>
+            <div class="text-xs text-slate-500" id="teacherAccountInfo">帳號：-</div>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="togglePwdModal(true)"
+            class="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold text-sm rounded-lg transition">
+            修改個人密碼
+          </button>
+          <button type="button" onclick="logoutTeacher()"
+            class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold text-sm rounded-lg transition">
+            登出
+          </button>
+        </div>
+      </div>
+
+      <!-- 自行修改密碼面板 -->
+      <div id="pwdModal" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-amber-950">修改輪值登入密碼</h3>
+          <button type="button" onclick="togglePwdModal(false)" class="text-slate-500 hover:text-slate-800 font-bold">✕</button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <input type="password" id="oldPwd" placeholder="請輸入原密碼" class="px-3 py-2 border border-amber-300 rounded-lg bg-white" />
+          <input type="password" id="newPwd" placeholder="請輸入新密碼（至少4碼）" class="px-3 py-2 border border-amber-300 rounded-lg bg-white" />
+          <button type="button" onclick="handleChangePassword()"
+            class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg">
+            確認更新密碼
+          </button>
+        </div>
+      </div>
+
+      <!-- 功能分頁切換按鈕 -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
+        <button type="button" onclick="switchTab('rollcall')" id="tabBtn-rollcall"
+          class="tab-btn py-2.5 px-3 rounded-lg font-bold text-sm bg-slate-800 text-white transition">
+          1. 教室點名與當日請假
+        </button>
+        <button type="button" onclick="switchTab('violation')" id="tabBtn-violation"
+          class="tab-btn py-2.5 px-3 rounded-lg font-bold text-sm text-slate-700 hover:bg-slate-100 transition">
+          2. 違規登記（記點1次）
+        </button>
+        <button type="button" onclick="switchTab('records')" id="tabBtn-records"
+          class="tab-btn py-2.5 px-3 rounded-lg font-bold text-sm text-slate-700 hover:bg-slate-100 transition">
+          3. 查詢違規紀錄
+        </button>
+        <button type="button" onclick="switchTab('leaves')" id="tabBtn-leaves"
+          class="tab-btn py-2.5 px-3 rounded-lg font-bold text-sm text-slate-700 hover:bg-slate-100 transition">
+          4. 當日請假名單總覽
+        </button>
+      </div>
+
+      <!-- 共用查詢篩選列（日期、時段類型、自習教室下拉式選單） -->
+      <div id="roomFilterBar" class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">自習日期</label>
+            <input type="date" id="selDate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">自習時段類別</label>
+            <select id="selSessionType" onchange="updateClassroomDropdown()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+              <option value="WEEKDAY">平日夜讀教室 (17:40-20:30)</option>
+              <option value="SATURDAY">週六自習教室 (08:00-12:00)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">選擇自習教室（下拉式選單）</label>
+            <select id="selClassroom" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+              <option value="">載入教室中...</option>
+            </select>
+          </div>
+          <div>
+            <button type="button" onclick="loadRosterData()"
+              class="w-full py-2 px-4 bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-sm rounded-lg shadow-sm transition">
+              載入該教室名單
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分頁 1：教室點名 -->
+      <div id="tab-rollcall" class="tab-panel bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-800 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-2">
+          <h3 class="font-bold">教室點名作業（已自動標示家長線上請假學生）</h3>
+          <span id="rosterSummaryBadge" class="text-xs bg-slate-700 px-3 py-1 rounded-full">請點擊「載入該教室名單」</span>
+        </div>
+        <div class="p-6">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 border-b">
+                  <th class="py-2.5 px-3">班級</th>
+                  <th class="py-2.5 px-3">座號</th>
+                  <th class="py-2.5 px-3">姓名</th>
+                  <th class="py-2.5 px-3">累計違規</th>
+                  <th class="py-2.5 px-3">當日狀態 / 請假提示</th>
+                  <th class="py-2.5 px-3">點名勾選</th>
+                  <th class="py-2.5 px-3">備註</th>
+                </tr>
+              </thead>
+              <tbody id="rollcallTbody" class="divide-y divide-slate-200">
+                <tr><td colspan="7" class="py-6 text-center text-slate-400">請選擇日期與教室後載入名單</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-5 flex justify-end">
+            <button type="button" id="btnSaveRollcall" onclick="saveRollcall()"
+              class="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow transition">
+              儲存本次教室點名紀錄
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分頁 2：違規登記（記點1次，滿3點退班） -->
+      <div id="tab-violation" class="tab-panel hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-rose-800 text-white px-6 py-4">
+          <h3 class="font-bold">違規登記（每次記點 1 點；累計滿 3 點自動退班並寄出退班門檻通知信）</h3>
+        </div>
+        <form id="violationForm" class="p-6 space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">違規學生（可從上方教室名單選擇）</label>
+              <select id="vioStudentSelect" onchange="fillVioStudentFromSelect()"
+                class="w-full px-3 py-2.5 border border-slate-300 rounded-lg bg-white text-sm">
+                <option value="">-- 從已載入教室名單快選 --</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">或手動輸入班級 <span class="text-rose-500">*</span></label>
+              <input type="text" id="vioClass" required placeholder="例如：901"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">座號 <span class="text-rose-500">*</span></label>
+              <input type="number" id="vioSeat" required placeholder="例如：15"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">違反自律公約項目（參照自律公約） <span class="text-rose-500">*</span></label>
+            <select id="vioRuleItem" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg bg-white">
+              <option value="">-- 請選擇違規公約條款 --</option>
+              <option value="未遵守外食、垃圾處理及自習用書規定（或中途回原教室拿東西）">1. 未遵守外食、垃圾處理及自習用書規定（或中途回原教室拿東西）</option>
+              <option value="違規使用夜讀教室後陽台（造成管理問題）">2. 違規使用夜讀教室後陽台（造成管理問題）</option>
+              <option value="無故缺曠或遲到">3. 無故缺曠或遲到</option>
+              <option value="自習期間（17:40-20:30）未全程待在校內">4. 自習期間（17:40-20:30）未全程待在校內</option>
+              <option value="自習期間手機未關機並全程收在書包">5. 自習期間手機未關機並全程收在書包</option>
+              <option value="自習時使用手機、耳機、3C產品">6. 自習時使用手機、耳機、3C產品</option>
+              <option value="自習時飲食（含咀嚼口香糖）或攜帶外食（含飲料）至夜讀教室">7. 自習時飲食（含咀嚼口香糖）或攜帶外食（含飲料）至夜讀教室</option>
+              <option value="自習時互動（傳紙條、交談、問問題等）影響他人學習">8. 自習時互動（傳紙條、交談、問問題等）影響他人學習</option>
+              <option value="塗鴉或破壞桌面、影響夜讀教室或座位整潔">9. 塗鴉或破壞桌面、影響夜讀教室或座位整潔</option>
+              <option value="下課時段至公約活動區（C棟2和3樓）外（暗處）活動">10. 下課時段至公約活動區（C棟2和3樓）外（暗處）活動</option>
+              <option value="從事其他與讀書無關之事或未遵守老師叮嚀之注意事項">11. 從事其他與讀書無關之事或未遵守老師叮嚀之注意事項</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">違規事實補充說明（選填）</label>
+            <textarea id="vioNote" rows="2" placeholder="請簡述違規時間或具體情況，此內容將一併寄送給家長..."
+              class="w-full px-3.5 py-2 border border-slate-300 rounded-lg"></textarea>
+          </div>
+
+          <div class="bg-rose-50 border border-rose-200 p-3.5 rounded-lg text-xs text-rose-800">
+            ⚠ 送出後系統將自動執行：① 登記違規記點 1 次並自動累計該生總點數；② 寄發違規通知信給家長；③ 若累計達 <strong>3 點</strong>，系統將自動標記為<strong>「已達退班門檻（取消自習資格）」</strong>並於通知信中醒目呈現。
+          </div>
+
+          <div class="flex justify-end">
+            <button type="submit" id="btnSubmitVio"
+              class="px-8 py-3 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded-xl shadow-md transition">
+              確認登記違規並寄發家長通知信
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 分頁 3：查詢違規紀錄 -->
+      <div id="tab-records" class="tab-panel hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-800 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-2">
+          <h3 class="font-bold">違規紀錄與累計點數查詢</h3>
+          <button type="button" onclick="loadViolationHistory()"
+            class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded">
+            重新整理紀錄
+          </button>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="flex flex-wrap gap-3 items-end bg-slate-50 p-3 rounded-lg border">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">篩選班級</label>
+              <input type="text" id="qVioClass" placeholder="全部班級" class="px-3 py-1.5 border rounded text-sm w-28" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">篩選座號</label>
+              <input type="number" id="qVioSeat" placeholder="全部" class="px-3 py-1.5 border rounded text-sm w-24" />
+            </div>
+            <button type="button" onclick="loadViolationHistory()"
+              class="px-4 py-1.5 bg-slate-800 text-white text-sm font-semibold rounded">
+              查詢
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 border-b">
+                  <th class="py-2.5 px-3">日期</th>
+                  <th class="py-2.5 px-3">教室</th>
+                  <th class="py-2.5 px-3">班級座號姓名</th>
+                  <th class="py-2.5 px-3">違規項目</th>
+                  <th class="py-2.5 px-3">累計點數</th>
+                  <th class="py-2.5 px-3">退班狀態</th>
+                  <th class="py-2.5 px-3">輪值人員</th>
+                </tr>
+              </thead>
+              <tbody id="vioHistoryTbody" class="divide-y divide-slate-200">
+                <tr><td colspan="7" class="py-6 text-center text-slate-400">載入中...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分頁 4：當日請假名單總覽（依夜讀與週六教室下拉式選單） -->
+      <div id="tab-leaves" class="tab-panel hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-teal-800 text-white px-6 py-4 flex items-center justify-between">
+          <h3 class="font-bold">當日請假名單（依上方選擇之日期與自習教室篩選）</h3>
+          <span id="leaveCountBadge" class="text-xs bg-teal-700 px-3 py-1 rounded-full">0 人請假</span>
+        </div>
+        <div class="p-6">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 border-b">
+                  <th class="py-2.5 px-3">自習教室</th>
+                  <th class="py-2.5 px-3">班級</th>
+                  <th class="py-2.5 px-3">座號</th>
+                  <th class="py-2.5 px-3">學生姓名</th>
+                  <th class="py-2.5 px-3">請假事由</th>
+                  <th class="py-2.5 px-3">家長備註說明</th>
+                </tr>
+              </thead>
+              <tbody id="todayLeavesTbody" class="divide-y divide-slate-200">
+                <tr><td colspan="6" class="py-6 text-center text-slate-400">請點擊上方「載入該教室名單」檢視當日請假學生</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // =========================================================================
+    // 【重要設定】請將下方網址替換為您部署 Google Apps Script 後取得的 Web App URL
+    // =========================================================================
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzG-bArC4WLRFNF6mVtRu8uLspQjVyMwOdT-zvaNODLfl2-jeRntmhkuqh-A4n4rsRH/exec';
+
+    let sysConfig = null;
+    let currentTeacher = null;
+    let currentRoster = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('selDate').value = `${yyyy}-${mm}-${dd}`;
+      if (today.getDay() === 6) {
+        document.getElementById('selSessionType').value = 'SATURDAY';
+      }
+
+      document.getElementById('loginForm').addEventListener('submit', handleLogin);
+      document.getElementById('violationForm').addEventListener('submit', handleSubmitViolation);
+      await loadSystemConfig();
+    });
+
+    async function callGasApi(payload) {
+      if (GAS_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+        throw new Error('尚未設定 GAS_API_URL，請先部署 Apps Script 並填入網址。');
+      }
+      const res = await fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      return await res.json();
+    }
+
+    async function loadSystemConfig() {
+      try {
+        const data = await callGasApi({ action: 'getConfig' });
+        if (data.success) {
+          sysConfig = data.config;
+          document.getElementById('schoolYearBadge').textContent = sysConfig.SCHOOL_YEAR || '輪值人員專區';
+          updateClassroomDropdown();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function updateClassroomDropdown() {
+      if (!sysConfig) return;
+      const type = document.getElementById('selSessionType').value;
+      const rawRooms = (type === 'SATURDAY')
+        ? (sysConfig.SATURDAY_CLASSROOMS || '週六A教室,週六B教室')
+        : (sysConfig.WEEKDAY_CLASSROOMS || '夜讀A教室,夜讀B教室');
+
+      const rooms = rawRooms.split(',').map(r => r.trim()).filter(Boolean);
+      const sel = document.getElementById('selClassroom');
+      sel.innerHTML = '<option value="ALL">-- 全部教室 --</option>' +
+        rooms.map(r => `<option value="${r}">${r}</option>`).join('');
+
+      if (currentTeacher && currentTeacher.defaultRoom && rooms.includes(currentTeacher.defaultRoom)) {
+        sel.value = currentTeacher.defaultRoom;
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnLogin');
+      const username = document.getElementById('tUsername').value.trim();
+      const password = document.getElementById('tPassword').value.trim();
+
+      btn.disabled = true;
+      btn.textContent = '登入驗證中...';
+
+      try {
+        const res = await callGasApi({ action: 'teacherLogin', username, password });
+        if (!res.success) {
+          alert(res.message);
+          return;
+        }
+        currentTeacher = res.teacher;
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('dashboardSection').classList.remove('hidden');
+        document.getElementById('teacherWelcome').textContent = `${currentTeacher.name}，您好！`;
+        document.getElementById('teacherAccountInfo').textContent = `輪值帳號：${currentTeacher.username}`;
+        updateClassroomDropdown();
+        await loadRosterData();
+        await loadViolationHistory();
+      } catch (err) {
+        alert('登入失敗：' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '登入輪值系統';
+      }
+    }
+
+    function logoutTeacher() {
+      currentTeacher = null;
+      document.getElementById('dashboardSection').classList.add('hidden');
+      document.getElementById('loginSection').classList.remove('hidden');
+      document.getElementById('tPassword').value = '';
+    }
+
+    function togglePwdModal(show) {
+      const el = document.getElementById('pwdModal');
+      if (show) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    }
+
+    async function handleChangePassword() {
+      const oldPassword = document.getElementById('oldPwd').value.trim();
+      const newPassword = document.getElementById('newPwd').value.trim();
+      if (!oldPassword || !newPassword) {
+        alert('請輸入原密碼與新密碼。');
+        return;
+      }
+      try {
+        const res = await callGasApi({
+          action: 'changeTeacherPassword',
+          username: currentTeacher.username,
+          oldPassword,
+          newPassword
+        });
+        alert(res.message);
+        if (res.success) {
+          document.getElementById('oldPwd').value = '';
+          document.getElementById('newPwd').value = '';
+          togglePwdModal(false);
+        }
+      } catch (err) {
+        alert('密碼修改失敗：' + err.message);
+      }
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById('tab-' + tabName).classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.className = 'tab-btn py-2.5 px-3 rounded-lg font-bold text-sm text-slate-700 hover:bg-slate-100 transition';
+      });
+      document.getElementById('tabBtn-' + tabName).className =
+        'tab-btn py-2.5 px-3 rounded-lg font-bold text-sm bg-slate-800 text-white transition';
+
+      if (tabName === 'records') {
+        loadViolationHistory();
+      }
+    }
+
+    async function loadRosterData() {
+      const date = document.getElementById('selDate').value;
+      const sessionType = document.getElementById('selSessionType').value;
+      const classroom = document.getElementById('selClassroom').value;
+
+      try {
+        const res = await callGasApi({
+          action: 'getClassroomRoster',
+          date,
+          sessionType,
+          classroom
+        });
+        if (!res.success) {
+          alert(res.message);
+          return;
+        }
+        currentRoster = res.students || [];
+        renderRollcallTable(currentRoster);
+        renderTodayLeavesTable(res.todayLeaves || []);
+        populateViolationStudentSelect(currentRoster);
+      } catch (err) {
+        alert('讀取名單失敗：' + err.message);
+      }
+    }
+
+    function renderRollcallTable(students) {
+      const tbody = document.getElementById('rollcallTbody');
+      const badge = document.getElementById('rosterSummaryBadge');
+      const leaveCnt = students.filter(s => s.isOnLeave).length;
+      badge.textContent = `應到 ${students.length} 人 ／ 已請假 ${leaveCnt} 人`;
+
+      if (students.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-400">該日期與教室無排定自習學生</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = students.map((s, idx) => {
+        const defaultStatus = s.isOnLeave ? '已請假' : '到席';
+        const rowBg = s.isOnLeave ? 'bg-teal-50/60' : '';
+        const ptsBadge = s.violationPoints > 0
+          ? `<span class="px-2 py-0.5 bg-amber-100 text-amber-800 font-bold rounded text-xs">${s.violationPoints} 點</span>`
+          : `<span class="text-slate-400 text-xs">0 點</span>`;
+
+        const statusHint = s.isOnLeave
+          ? `<span class="text-teal-700 font-bold text-xs">【家長已請假】${s.leaveReason}</span>`
+          : `<span class="text-slate-500 text-xs">正常排定自習</span>`;
+
+        return `
+          <tr class="${rowBg}">
+            <td class="py-2.5 px-3 font-medium">${s.studentClass}</td>
+            <td class="py-2.5 px-3">${s.seatNo}</td>
+            <td class="py-2.5 px-3 font-bold">${s.studentName}</td>
+            <td class="py-2.5 px-3">${ptsBadge}</td>
+            <td class="py-2.5 px-3">${statusHint}</td>
+            <td class="py-2.5 px-3">
+              <select id="attStatus-${idx}" class="px-2.5 py-1 border border-slate-300 rounded bg-white text-sm">
+                <option value="到席" ${defaultStatus === '到席' ? 'selected' : ''}>到席</option>
+                <option value="已請假" ${defaultStatus === '已請假' ? 'selected' : ''}>已請假</option>
+                <option value="遲到" ${defaultStatus === '遲到' ? 'selected' : ''}>遲到</option>
+                <option value="無故缺曠" ${defaultStatus === '無故缺曠' ? 'selected' : ''}>無故缺曠</option>
+              </select>
+            </td>
+            <td class="py-2.5 px-3">
+              <input type="text" id="attNote-${idx}" value="${s.leaveNote || ''}" placeholder="備註..."
+                class="px-2 py-1 border border-slate-200 rounded text-xs w-32" />
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function saveRollcall() {
+      if (currentRoster.length === 0) {
+        alert('目前沒有可儲存的點名名單。');
+        return;
+      }
+      const btn = document.getElementById('btnSaveRollcall');
+      const records = currentRoster.map((s, idx) => ({
+        studentClass: s.studentClass,
+        seatNo: s.seatNo,
+        studentName: s.studentName,
+        status: document.getElementById(`attStatus-${idx}`).value,
+        note: document.getElementById(`attNote-${idx}`).value.trim()
+      }));
+
+      btn.disabled = true;
+      btn.textContent = '點名資料儲存中...';
+
+      try {
+        const res = await callGasApi({
+          action: 'submitAttendance',
+          date: document.getElementById('selDate').value,
+          sessionType: document.getElementById('selSessionType').value,
+          classroom: document.getElementById('selClassroom').value,
+          teacherName: `${currentTeacher.name}(${currentTeacher.username})`,
+          records
+        });
+        alert(res.message);
+      } catch (err) {
+        alert('儲存點名失敗：' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '儲存本次教室點名紀錄';
+      }
+    }
+
+    function renderTodayLeavesTable(leaves) {
+      const tbody = document.getElementById('todayLeavesTbody');
+      document.getElementById('leaveCountBadge').textContent = `${leaves.length} 人請假`;
+
+      if (leaves.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">該日與所選教室無請假學生</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = leaves.map(l => `
+        <tr class="bg-teal-50/40">
+          <td class="py-2.5 px-3 font-medium">${l.classroom}</td>
+          <td class="py-2.5 px-3">${l.studentClass}</td>
+          <td class="py-2.5 px-3">${l.seatNo}</td>
+          <td class="py-2.5 px-3 font-bold">${l.studentName}</td>
+          <td class="py-2.5 px-3 text-teal-800 font-semibold">${l.leaveReason}</td>
+          <td class="py-2.5 px-3 text-slate-600">${l.leaveNote || '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function populateViolationStudentSelect(students) {
+      const sel = document.getElementById('vioStudentSelect');
+      sel.innerHTML = '<option value="">-- 從已載入教室名單快選 --</option>' +
+        students.map(s => `<option value="${s.studentClass}_${s.seatNo}">${s.studentClass}班 ${s.seatNo}號 ${s.studentName}（目前${s.violationPoints}點）</option>`).join('');
+    }
+
+    function fillVioStudentFromSelect() {
+      const val = document.getElementById('vioStudentSelect').value;
+      if (!val) return;
+      const [cls, seat] = val.split('_');
+      document.getElementById('vioClass').value = cls;
+      document.getElementById('vioSeat').value = seat;
+    }
+
+    async function handleSubmitViolation(e) {
+      e.preventDefault();
+      const studentClass = document.getElementById('vioClass').value.trim();
+      const seatNo = document.getElementById('vioSeat').value.trim();
+      const ruleItem = document.getElementById('vioRuleItem').value;
+      const note = document.getElementById('vioNote').value.trim();
+
+      if (!confirm(`確定要對【${studentClass}班 ${seatNo}號】登記違規記點 1 次並寄出通知信給家長嗎？`)) {
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitVio');
+      btn.disabled = true;
+      btn.textContent = '違規登記與寄信中...';
+
+      try {
+        const res = await callGasApi({
+          action: 'submitViolation',
+          date: document.getElementById('selDate').value,
+          sessionType: document.getElementById('selSessionType').value,
+          classroom: document.getElementById('selClassroom').value,
+          studentClass,
+          seatNo,
+          ruleItem,
+          note,
+          teacherName: `${currentTeacher.name}(${currentTeacher.username})`
+        });
+        alert(res.message);
+        if (res.success) {
+          document.getElementById('violationForm').reset();
+          await loadRosterData();
+          await loadViolationHistory();
+        }
+      } catch (err) {
+        alert('違規登記失敗：' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '確認登記違規並寄發家長通知信';
+      }
+    }
+
+    async function loadViolationHistory() {
+      const studentClass = document.getElementById('qVioClass').value.trim();
+      const seatNo = document.getElementById('qVioSeat').value.trim();
+      const tbody = document.getElementById('vioHistoryTbody');
+
+      try {
+        const res = await callGasApi({
+          action: 'getViolationRecords',
+          studentClass,
+          seatNo
+        });
+        if (!res.success) return;
+        const list = res.records || [];
+        if (list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-400">查無違規紀錄</td></tr>';
+          return;
+        }
+        tbody.innerHTML = list.map(r => {
+          const isExpelled = String(r.expelled).includes('是');
+          const badge = isExpelled
+            ? `<span class="px-2 py-0.5 bg-rose-600 text-white font-bold rounded text-xs">已達3點退班</span>`
+            : `<span class="px-2 py-0.5 bg-amber-100 text-amber-800 font-semibold rounded text-xs">累計 ${r.totalPoints} 點</span>`;
+          return `
+            <tr class="${isExpelled ? 'bg-rose-50/70' : ''}">
+              <td class="py-2.5 px-3">${r.date}</td>
+              <td class="py-2.5 px-3 text-xs">${r.classroom}</td>
+              <td class="py-2.5 px-3 font-bold">${r.studentClass}班 ${r.seatNo}號 ${r.studentName}</td>
+              <td class="py-2.5 px-3 text-xs">${r.ruleItem}${r.note ? '（' + r.note + '）' : ''}</td>
+              <td class="py-2.5 px-3 font-bold text-rose-700">${r.totalPoints} 點</td>
+              <td class="py-2.5 px-3">${badge}</td>
+              <td class="py-2.5 px-3 text-xs text-slate-500">${r.teacher}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-rose-500">載入失敗：${err.message}</td></tr>`;
+      }
+    }
+  </script>
+</body>
+</html>

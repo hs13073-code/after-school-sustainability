@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>東興國中九年級晚間暨週六自習 - 家長線上請假系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; background-color: #f3f6fa; }
+  </style>
+</head>
+<body class="text-slate-800">
+  <!-- 頂部導覽列 -->
+  <header class="bg-teal-900 text-white shadow-md">
+    <div class="max-w-4xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <span id="schoolYearBadge" class="inline-block bg-teal-700 text-teal-100 text-xs font-semibold px-2.5 py-1 rounded-full mb-1">載入學期資訊中...</span>
+        <h1 class="text-xl sm:text-2xl font-bold tracking-wide">東興國中自習系統 — 家長專用請假系統</h1>
+        <p class="text-teal-200 text-sm mt-0.5">需經家長登記信箱驗證碼核對後方可請假</p>
+      </div>
+      <nav class="flex flex-wrap gap-2 text-sm">
+        <a href="../index.html" class="bg-teal-800 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg transition">自習報名</a>
+        <a href="./index.html" class="bg-white text-teal-900 font-semibold px-3 py-1.5 rounded-lg shadow-sm">家長請假</a>
+        <a href="../teacher/index.html" class="bg-teal-800 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg transition">輪值老師系統</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+    <!-- 重要規定提示 -->
+    <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg shadow-sm text-sm text-amber-950 space-y-1">
+      <div class="font-bold text-base">⚠ 家長請假重要規定：</div>
+      <p>1. 依據自習辦法第9條：需請假者，<strong>請家長務必親自透過本系統驗證請假（勿讓同學自行填寫）</strong>，請假不予退費。</p>
+      <p>2. 系統會自動阻擋<strong>「暫停自習日」</strong>與<strong>「該生未報名參加的星期」</strong>，無法點選加入請假清單。</p>
+      <p id="cutoffInfoText" class="font-semibold text-rose-700">3. 線上請假截止時間載入中... 若已超過請假截止時間或有疑問，請直接聯絡教務處。</p>
+    </div>
+
+    <!-- 步驟一：家長身分與 Email 驗證 -->
+    <section id="verifySection" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="bg-slate-800 text-white px-6 py-4">
+        <h2 class="text-lg font-bold">一、家長身分驗證（寄送一次性驗證碼）</h2>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">學生班級 <span class="text-rose-500">*</span></label>
+            <input type="text" id="vClass" placeholder="例如：901"
+              class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">學生座號 <span class="text-rose-500">*</span></label>
+            <input type="number" id="vSeat" placeholder="例如：15"
+              class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">報名時登記的家長 Email <span class="text-rose-500">*</span></label>
+            <input type="email" id="vEmail" placeholder="parent@example.com"
+              class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500" />
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <button type="button" id="btnSendOtp"
+            class="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-lg shadow-sm transition">
+            寄送 6 位數驗證碼至信箱
+          </button>
+          <span id="otpStatusMsg" class="text-sm text-teal-700 font-medium"></span>
+        </div>
+
+        <div class="pt-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-end gap-4">
+          <div class="w-full sm:w-64">
+            <label class="block text-sm font-semibold text-slate-700 mb-1">輸入信箱收到的 6 位數驗證碼 <span class="text-rose-500">*</span></label>
+            <input type="text" id="vOtp" maxlength="6" placeholder="請輸入 6 位數字"
+              class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg tracking-widest font-mono text-lg focus:ring-2 focus:ring-teal-500" />
+          </div>
+          <button type="button" id="btnVerifyOtp"
+            class="px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow-sm transition">
+            驗證並進入請假系統
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 步驟二：學生資料與請假操作區（驗證通過後顯示） -->
+    <section id="leaveSection" class="hidden space-y-6">
+      <!-- 學生報名狀態卡片 -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-3 mb-4">
+          <h2 class="text-lg font-bold text-slate-800">二、學生自習報名資訊確認</h2>
+          <span class="text-xs bg-teal-100 text-teal-800 font-bold px-3 py-1 rounded-full">家長身分已驗證</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          <div class="bg-slate-50 p-3 rounded-lg">
+            <div class="text-slate-500 text-xs">班級座號姓名</div>
+            <div class="font-bold text-base text-slate-900 mt-0.5" id="stIdentity">-</div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-lg">
+            <div class="text-slate-500 text-xs">已報名參加星期</div>
+            <div class="font-bold text-base text-teal-700 mt-0.5" id="stDays">-</div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-lg">
+            <div class="text-slate-500 text-xs">編排自習教室</div>
+            <div class="font-bold text-sm text-slate-800 mt-0.5" id="stRooms">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 選擇請假日期與事由 -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-teal-800 text-white px-6 py-4">
+          <h2 class="text-lg font-bold">三、新增請假日期與事由</h2>
+        </div>
+        <div class="p-6 space-y-5">
+          <!-- 日期選擇器與加入清單 -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">1. 選擇請假日期並加入清單（可一次加入多天）</label>
+            <div class="flex flex-wrap items-center gap-3">
+              <input type="date" id="pickDate"
+                class="px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500" />
+              <button type="button" id="btnAddDate"
+                class="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-lg shadow-sm transition">
+                + 加入此請假日期
+              </button>
+            </div>
+            <p id="dateCheckFeedback" class="text-sm mt-2 font-medium hidden"></p>
+          </div>
+
+          <!-- 已加入的請假日期標籤區 -->
+          <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <div class="text-xs font-semibold text-slate-500 mb-2">本次預計請假日期清單：</div>
+            <div id="selectedDatesContainer" class="flex flex-wrap gap-2">
+              <span class="text-sm text-slate-400">尚未加入任何請假日期</span>
+            </div>
+          </div>
+
+          <!-- 請假事由下拉式選單 -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">2. 請假事由 <span class="text-rose-500">*</span></label>
+            <select id="leaveReason"
+              class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-teal-500">
+              <option value="">-- 請選擇請假事由 --</option>
+              <option value="病假（身體不適/就醫）">病假（身體不適/就醫）</option>
+              <option value="事假（家庭重要事務）">事假（家庭重要事務）</option>
+              <option value="補習/才藝/課外課程">補習/才藝/課外課程</option>
+              <option value="公假（校內外競賽或活動）">公假（校內外競賽或活動）</option>
+              <option value="喪假">喪假</option>
+              <option value="其他原因（請於下方備註說明）">其他原因（請於下方備註說明）</option>
+            </select>
+          </div>
+
+          <!-- 備註說明欄 -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">3. 備註說明欄</label>
+            <textarea id="leaveNote" rows="3" placeholder="請補充說明請假原因或家長聯絡事項（選填）..."
+              class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500"></textarea>
+          </div>
+
+          <div class="pt-2 flex justify-end">
+            <button type="button" id="btnSubmitLeave"
+              class="w-full sm:w-auto px-8 py-3 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-xl shadow-md transition">
+              確認送出請假申請
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 歷史請假紀錄查詢 -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 class="text-base font-bold text-slate-800 mb-3">已核備之歷史請假紀錄</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 border-b">
+                <th class="py-2.5 px-3">請假日期</th>
+                <th class="py-2.5 px-3">星期</th>
+                <th class="py-2.5 px-3">請假事由</th>
+                <th class="py-2.5 px-3">備註說明</th>
+              </tr>
+            </thead>
+            <tbody id="historyLeaveTbody" class="divide-y divide-slate-200">
+              <tr><td colspan="4" class="py-4 text-center text-slate-400">尚無請假紀錄</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 頁尾教務處聯絡資訊 -->
+    <footer class="bg-white rounded-xl p-5 border border-slate-200 text-center text-sm text-slate-600 shadow-sm">
+      <p class="font-bold text-rose-700" id="officeContactFooter">家長如有疑問或超過請假截止時間，請直接聯絡東興國中教務處。</p>
+    </footer>
+  </main>
+
+  <script>
+    // =========================================================================
+    // 【重要設定】請將下方網址替換為您部署 Google Apps Script 後取得的 Web App URL
+    // =========================================================================
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzG-bArC4WLRFNF6mVtRu8uLspQjVyMwOdT-zvaNODLfl2-jeRntmhkuqh-A4n4rsRH/exec';
+
+    let sysConfig = null;
+    let suspendedMap = {};
+    let verifiedStudent = null;
+    let existingLeaveDates = new Set();
+    let selectedLeaveDates = [];
+
+    const DAY_NAMES = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadConfig();
+      document.getElementById('btnSendOtp').addEventListener('click', handleSendOtp);
+      document.getElementById('btnVerifyOtp').addEventListener('click', handleVerifyOtp);
+      document.getElementById('btnAddDate').addEventListener('click', handleAddDate);
+      document.getElementById('btnSubmitLeave').addEventListener('click', handleSubmitLeave);
+    });
+
+    async function callGasApi(payload) {
+      if (GAS_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+        throw new Error('尚未設定 GAS_API_URL，請先部署 Apps Script 並填入網址。');
+      }
+      const res = await fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      return await res.json();
+    }
+
+    async function loadConfig() {
+      try {
+        const data = await callGasApi({ action: 'getConfig' });
+        if (!data.success) throw new Error(data.message);
+        sysConfig = data.config;
+
+        document.getElementById('schoolYearBadge').textContent = sysConfig.SCHOOL_YEAR || '東興國中自習系統';
+        document.getElementById('cutoffInfoText').textContent =
+          `3. 線上請假截止時間：平日當日 ${sysConfig.LEAVE_CUTOFF_WEEKDAY || '17:30'} 前、週六當日 ${sysConfig.LEAVE_CUTOFF_SATURDAY || '07:50'} 前；超過時間或有疑問請聯絡教務處。`;
+        document.getElementById('officeContactFooter').textContent =
+          sysConfig.OFFICE_CONTACT || '家長有疑問或是超過請假截止時間請聯絡教務處。';
+
+        suspendedMap = {};
+        (data.suspendedDates || []).forEach(item => {
+          suspendedMap[item.date] = item.reason;
+        });
+      } catch (err) {
+        alert('讀取系統設定失敗：' + err.message);
+      }
+    }
+
+    async function handleSendOtp() {
+      const btn = document.getElementById('btnSendOtp');
+      const msgEl = document.getElementById('otpStatusMsg');
+      const studentClass = document.getElementById('vClass').value.trim();
+      const seatNo = document.getElementById('vSeat').value.trim();
+      const email = document.getElementById('vEmail').value.trim();
+
+      if (!studentClass || !seatNo || !email) {
+        alert('請先填寫班級、座號及報名時登記的家長 Email 信箱。');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '驗證碼寄送中...';
+      msgEl.textContent = '';
+
+      try {
+        const res = await callGasApi({
+          action: 'sendOtp',
+          studentClass,
+          seatNo,
+          email
+        });
+        if (res.success) {
+          msgEl.className = 'text-sm text-emerald-700 font-semibold';
+          msgEl.textContent = res.message;
+        } else {
+          msgEl.className = 'text-sm text-rose-600 font-semibold';
+          msgEl.textContent = res.message;
+        }
+      } catch (err) {
+        alert('寄送失敗：' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '寄送 6 位數驗證碼至信箱';
+      }
+    }
+
+    async function handleVerifyOtp() {
+      const btn = document.getElementById('btnVerifyOtp');
+      const studentClass = document.getElementById('vClass').value.trim();
+      const seatNo = document.getElementById('vSeat').value.trim();
+      const email = document.getElementById('vEmail').value.trim();
+      const otp = document.getElementById('vOtp').value.trim();
+
+      if (!otp) {
+        alert('請輸入信箱收到的 6 位數驗證碼。');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '驗證中...';
+
+      try {
+        const res = await callGasApi({
+          action: 'verifyOtpAndGetStudent',
+          studentClass,
+          seatNo,
+          email,
+          otp
+        });
+        if (!res.success) {
+          alert(res.message);
+          return;
+        }
+
+        verifiedStudent = res.student;
+        renderStudentDashboard(res.student, res.existingLeaves || []);
+      } catch (err) {
+        alert('驗證失敗：' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '驗證並進入請假系統';
+      }
+    }
+
+    function renderStudentDashboard(st, leaves) {
+      document.getElementById('leaveSection').classList.remove('hidden');
+      document.getElementById('stIdentity').textContent = `${st.studentClass} 班 ${st.seatNo} 號 ${st.studentName}`;
+
+      const enrolledDays = [];
+      for (let d = 1; d <= 6; d++) {
+        if (st.days[d]) enrolledDays.push(DAY_NAMES[d]);
+      }
+      document.getElementById('stDays').textContent = enrolledDays.length > 0 ? enrolledDays.join('、') : '無';
+      document.getElementById('stRooms').textContent = `平日：${st.weekdayRoom} ／ 週六：${st.satRoom}`;
+
+      existingLeaveDates = new Set(leaves.map(l => l.date));
+      const tbody = document.getElementById('historyLeaveTbody');
+      if (leaves.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-slate-400">尚無請假紀錄</td></tr>';
+      } else {
+        tbody.innerHTML = leaves.map(l => `
+          <tr>
+            <td class="py-2.5 px-3 font-medium">${l.date}</td>
+            <td class="py-2.5 px-3">${l.dayOfWeek}</td>
+            <td class="py-2.5 px-3">${l.reason}</td>
+            <td class="py-2.5 px-3 text-slate-500">${l.note || '-'}</td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('leaveSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showDateFeedback(msg, isError) {
+      const el = document.getElementById('dateCheckFeedback');
+      el.classList.remove('hidden', 'text-rose-600', 'text-emerald-700');
+      el.classList.add(isError ? 'text-rose-600' : 'text-emerald-700');
+      el.textContent = msg;
+    }
+
+    function handleAddDate() {
+      if (!verifiedStudent) return;
+      const dateStr = document.getElementById('pickDate').value;
+      if (!dateStr) {
+        showDateFeedback('請先選擇一個日期。', true);
+        return;
+      }
+
+      // 1. 檢查是否為暫停自習日
+      if (suspendedMap[dateStr]) {
+        showDateFeedback(`❌ 無法加入：${dateStr} 為暫停自習日（${suspendedMap[dateStr]}），無需請假。`, true);
+        return;
+      }
+
+      // 2. 檢查該生是否報名該星期
+      const dObj = new Date(dateStr.replace(/-/g, '/') + ' 12:00:00');
+      const dow = dObj.getDay();
+      if (!verifiedStudent.days[dow]) {
+        showDateFeedback(`❌ 無法加入：${dateStr}（${DAY_NAMES[dow]}）貴子弟並未報名參加自習，無法點選加入。`, true);
+        return;
+      }
+
+      // 3. 檢查是否已過期或超過當日請假截止時間
+      const now = new Date();
+      const todayStr = now.getFullYear() + '-' +
+        String(now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(now.getDate()).padStart(2, '0');
+      const nowHHmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+      if (dateStr < todayStr) {
+        showDateFeedback(`❌ 無法加入：${dateStr} 已過期，超過請假時間請直接聯絡教務處。`, true);
+        return;
+      }
+      if (dateStr === todayStr && sysConfig) {
+        const cutoff = (dow === 6)
+          ? (sysConfig.LEAVE_CUTOFF_SATURDAY || '07:50')
+          : (sysConfig.LEAVE_CUTOFF_WEEKDAY || '17:30');
+        if (nowHHmm > cutoff) {
+          showDateFeedback(`❌ 今日已超過線上請假截止時間（${cutoff}），請直接聯絡教務處辦理！`, true);
+          return;
+        }
+      }
+
+      // 4. 檢查重複
+      if (existingLeaveDates.has(dateStr)) {
+        showDateFeedback(`⚠ ${dateStr} 已經請過假了，無需重複加入。`, true);
+        return;
+      }
+      if (selectedLeaveDates.includes(dateStr)) {
+        showDateFeedback(`⚠ ${dateStr} 已在下方請假清單中。`, true);
+        return;
+      }
+
+      selectedLeaveDates.push(dateStr);
+      selectedLeaveDates.sort();
+      renderSelectedDates();
+      showDateFeedback(`✔ 已將 ${dateStr}（${DAY_NAMES[dow]}）加入請假清單。`, false);
+    }
+
+    function removeSelectedDate(dateStr) {
+      selectedLeaveDates = selectedLeaveDates.filter(d => d !== dateStr);
+      renderSelectedDates();
+    }
+
+    function renderSelectedDates() {
+      const container = document.getElementById('selectedDatesContainer');
+      if (selectedLeaveDates.length === 0) {
+        container.innerHTML = '<span class="text-sm text-slate-400">尚未加入任何請假日期</span>';
+        return;
+      }
+      container.innerHTML = selectedLeaveDates.map(d => {
+        const dow = new Date(d.replace(/-/g, '/') + ' 12:00:00').getDay();
+        return `
+          <span class="inline-flex items-center gap-2 bg-teal-100 text-teal-900 font-semibold text-sm px-3 py-1.5 rounded-full">
+            ${d} (${DAY_NAMES[dow]})
+            <button type="button" onclick="removeSelectedDate('${d}')" class="text-teal-700 hover:text-rose-600 font-bold">✕</button>
+          </span>
+        `;
+      }).join('');
+    }
+
+    async function handleSubmitLeave() {
+      if (selectedLeaveDates.length === 0) {
+        alert('請先選擇並加入至少一個請假日期。');
+        return;
+      }
+      const reason = document.getElementById('leaveReason').value;
+      if (!reason) {
+        alert('請選擇「請假事由」。');
+        return;
+      }
+      const note = document.getElementById('leaveNote').value.trim();
+      const btn = document.getElementById('btnSubmitLeave');
+
+      btn.disabled = true;
+      btn.textContent = '請假資料送出中...';
+
+      try {
+        const res = await callGasApi({
+          action: 'submitLeave',
+          studentClass: document.getElementById('vClass').value.trim(),
+          seatNo: document.getElementById('vSeat').value.trim(),
+          email: document.getElementById('vEmail').value.trim(),
+          otp: document.getElementById('vOtp').value.trim(),
+          dates: selectedLeaveDates,
+          reason: reason,
+          note: note
+        });
+        alert(res.message);
+        if (res.success) {
+          selectedLeaveDates = [];
+          renderSelectedDates();
+          document.getElementById('leaveReason').value = '';
+          document.getElementById('leaveNote').value = '';
+          await handleVerifyOtp(); // 重新整理歷史請假清單
+        }
+      } catch (err) {
+        alert('送出失敗：' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '確認送出請假申請';
+      }
+    }
+  </script>
+</body>
+</html>
