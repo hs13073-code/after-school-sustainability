@@ -3,220 +3,292 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>東興國中九年級晚間暨週六自習 - 線上報名與加退選系統</title>
+  <title>東興國中九年級晚間暨週六自習整合系統</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; background-color: #f3f6fa; }
     .rules-box { white-space: pre-wrap; line-height: 1.75; }
   </style>
 </head>
-<body class="text-slate-800">
-  <!-- 頂部導覽列 -->
+<body class="text-slate-800 min-h-screen flex flex-col">
+  <!-- 頂部標題列 -->
   <header class="bg-indigo-900 text-white shadow-md">
-    <div class="max-w-4xl mx-auto px-4 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="max-w-4xl mx-auto px-4 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <span id="schoolYearBadge" class="inline-block bg-indigo-700 text-indigo-100 text-xs font-semibold px-2.5 py-1 rounded-full mb-1">載入學期資訊中...</span>
         <h1 class="text-xl sm:text-2xl font-bold tracking-wide">東興國中九年級晚間暨週六自習系統</h1>
-        <p class="text-indigo-200 text-sm mt-0.5">線上報名 / 截止日後異動與加退選</p>
+        <p class="text-indigo-200 text-sm mt-0.5">報名加退選 ／ 家長線上請假 ／ 輪值點名與違規管理</p>
       </div>
-      <nav class="flex flex-wrap gap-2 text-sm">
-        <a href="./index.html" class="bg-white text-indigo-900 font-semibold px-3 py-1.5 rounded-lg shadow-sm">自習報名</a>
-        <a href="./leave/index.html" class="bg-indigo-800 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition">家長請假</a>
-        <a href="./teacher/index.html" class="bg-indigo-800 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition">輪值老師系統</a>
-      </nav>
+      <!-- 返回首頁選單按鈕（進入報名畫面後顯示） -->
+      <div id="backHomeBox" class="hidden">
+        <button type="button" onclick="showPortalHome()"
+          class="bg-white/15 hover:bg-white/25 text-white border border-white/30 font-semibold text-sm px-4 py-2 rounded-lg transition">
+          ← 返回首頁選單
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
-    <!-- 系統狀態橫幅 -->
-    <div id="statusBanner" class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded-r-lg shadow-sm flex items-start gap-3">
-      <div class="text-blue-600 font-bold text-lg">ℹ</div>
-      <div>
-        <div class="font-bold text-blue-900" id="phaseTitle">正在讀取系統報名時程設定...</div>
-        <div class="text-sm text-blue-800 mt-1" id="phaseSub">請稍候，系統正與 Google 試算表同步最新規定。</div>
+  <main class="max-w-4xl w-full mx-auto px-4 py-8 flex-1 space-y-6">
+    <!-- =================================================================== -->
+    <!-- 畫面 A：首頁入口（預設僅顯示三個功能大按鈕） -->
+    <!-- =================================================================== -->
+    <section id="portalHomeSection" class="space-y-6 py-4">
+      <div class="text-center space-y-1">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-800">請選擇您要使用的系統功能</h2>
+        <p class="text-sm text-slate-500">點擊下方按鈕進入對應操作頁面</p>
       </div>
-    </div>
 
-    <!-- 步驟一：自習辦法與自律公約（從試算表動態載入） -->
-    <section id="rulesSection" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div class="bg-slate-800 text-white px-6 py-4 flex items-center justify-between">
-        <h2 class="text-lg font-bold">一、留校自習辦法與自律公約</h2>
-        <span class="text-xs bg-slate-700 px-2.5 py-1 rounded">同步自試算表設定</span>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+        <!-- 按鈕 1：自習報名 / 加退選 -->
+        <button type="button" onclick="openRegistrationView()"
+          class="group text-left bg-white hover:bg-indigo-50 border-2 border-slate-200 hover:border-indigo-600 rounded-2xl p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-700 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center text-2xl font-bold mb-4 transition">
+              📝
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 group-hover:text-indigo-900">1. 自習報名 / 加退選</h3>
+            <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+              查看留校自習辦法與自律公約，進行初次報名、截止日後異動或退選申請。
+            </p>
+          </div>
+          <div class="mt-5 text-sm font-bold text-indigo-700 group-hover:translate-x-1 transition">
+            進入報名頁面 →
+          </div>
+        </button>
+
+        <!-- 按鈕 2：家長請假系統 -->
+        <a href="./leave/index.html"
+          class="group text-left bg-white hover:bg-teal-50 border-2 border-slate-200 hover:border-teal-600 rounded-2xl p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 group-hover:bg-teal-600 group-hover:text-white flex items-center justify-center text-2xl font-bold mb-4 transition">
+              📅
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 group-hover:text-teal-900">2. 家長線上請假</h3>
+            <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+              僅限家長使用（需透過登記信箱接收驗證碼），辦理晚間或週六自習請假。
+            </p>
+          </div>
+          <div class="mt-5 text-sm font-bold text-teal-700 group-hover:translate-x-1 transition">
+            進入請假頁面 →
+          </div>
+        </a>
+
+        <!-- 按鈕 3：輪值人員系統 -->
+        <a href="./teacher/index.html"
+          class="group text-left bg-white hover:bg-slate-100 border-2 border-slate-200 hover:border-slate-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-slate-200 text-slate-800 group-hover:bg-slate-800 group-hover:text-white flex items-center justify-center text-2xl font-bold mb-4 transition">
+              📋
+            </div>
+            <h3 class="text-lg font-bold text-slate-900">3. 輪值人員系統</h3>
+            <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+              輪值老師專用登入區，進行教室點名、檢視當日請假名單及違規記點登記。
+            </p>
+          </div>
+          <div class="mt-5 text-sm font-bold text-slate-800 group-hover:translate-x-1 transition">
+            進入輪值頁面 →
+          </div>
+        </a>
       </div>
-      <div class="p-6 space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm bg-slate-50 p-4 rounded-lg border border-slate-200">
-          <div><span class="font-bold text-slate-700">平日夜讀起訖：</span><span id="infoWeekday">-</span></div>
-          <div><span class="font-bold text-slate-700">週六自習起訖：</span><span id="infoSaturday">-</span></div>
-          <div><span class="font-bold text-slate-700">初次報名截止：</span><span id="infoRegDeadline" class="text-rose-600 font-semibold">-</span></div>
-          <div><span class="font-bold text-slate-700">異動最終截止：</span><span id="infoModDeadline" class="text-rose-600 font-semibold">-</span></div>
-          <div class="md:col-span-2"><span class="font-bold text-slate-700">座位公告資訊：</span><span id="infoSeat">-</span></div>
-          <div class="md:col-span-2"><span class="font-bold text-slate-700">收費標準說明：</span><span id="infoFee">-</span></div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 畫面 B：自習報名與加退選內容（預設隱藏，點擊「自習報名」按鈕後顯示） -->
+    <!-- =================================================================== -->
+    <div id="registrationView" class="hidden space-y-6">
+      <!-- 系統狀態橫幅 -->
+      <div id="statusBanner" class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded-r-lg shadow-sm flex items-start gap-3">
+        <div class="text-blue-600 font-bold text-lg">ℹ</div>
+        <div>
+          <div class="font-bold text-blue-900" id="phaseTitle">正在讀取系統報名時程設定...</div>
+          <div class="text-sm text-blue-800 mt-1" id="phaseSub">請稍候，系統正與 Google 試算表同步最新規定。</div>
+        </div>
+      </div>
+
+      <!-- 步驟一：自習辦法與自律公約 -->
+      <section id="rulesSection" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-800 text-white px-6 py-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold">一、留校自習辦法與自律公約</h2>
+          <span class="text-xs bg-slate-700 px-2.5 py-1 rounded">同步自試算表設定</span>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <div><span class="font-bold text-slate-700">平日夜讀起訖：</span><span id="infoWeekday">-</span></div>
+            <div><span class="font-bold text-slate-700">週六自習起訖：</span><span id="infoSaturday">-</span></div>
+            <div><span class="font-bold text-slate-700">初次報名截止：</span><span id="infoRegDeadline" class="text-rose-600 font-semibold">-</span></div>
+            <div><span class="font-bold text-slate-700">異動最終截止：</span><span id="infoModDeadline" class="text-rose-600 font-semibold">-</span></div>
+            <div class="md:col-span-2"><span class="font-bold text-slate-700">座位公告資訊：</span><span id="infoSeat">-</span></div>
+            <div class="md:col-span-2"><span class="font-bold text-slate-700">收費標準說明：</span><span id="infoFee">-</span></div>
+          </div>
+
+          <div id="rulesContent" class="rules-box bg-amber-50/60 border border-amber-200 rounded-lg p-5 text-sm text-slate-800 max-h-96 overflow-y-auto">
+            載入辦法與公約內容中...
+          </div>
+
+          <div class="pt-2 border-t border-slate-200">
+            <label class="flex items-start gap-3 cursor-pointer select-none p-3 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 transition">
+              <input type="checkbox" id="agreeCheckbox" class="mt-1 w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500" />
+              <span class="text-sm sm:text-base font-medium text-slate-900">
+                學生與家長已詳細閱讀並完全同意上述《留校自習辦法與自律公約》（含違規記點滿三次退班、請假不予退費及異動截止期限等規定）。
+              </span>
+            </label>
+
+            <div class="mt-4 flex flex-wrap gap-3">
+              <button type="button" id="btnStartReg" disabled
+                class="px-6 py-3 rounded-lg font-bold text-white bg-slate-400 cursor-not-allowed transition shadow-sm">
+                請先勾選同意公約後點此【報名 / 加退選】
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 步驟二：報名 / 加退選表單（同意公約後展開） -->
+      <section id="formSection" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-indigo-800 text-white px-6 py-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold" id="formHeaderTitle">二、填寫學生與家長報名資料</h2>
+          <span id="modeBadge" class="text-xs bg-emerald-500 text-white font-bold px-2.5 py-1 rounded">報名模式</span>
         </div>
 
-        <div id="rulesContent" class="rules-box bg-amber-50/60 border border-amber-200 rounded-lg p-5 text-sm text-slate-800 max-h-96 overflow-y-auto">
-          載入辦法與公約內容中...
-        </div>
+        <form id="regForm" class="p-6 space-y-6">
+          <!-- 異動模式專屬：全部退選選項 -->
+          <div id="withdrawBox" class="hidden bg-rose-50 border border-rose-200 rounded-lg p-4">
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" id="isWithdrawAll" class="mt-1 w-5 h-5 text-rose-600 rounded" />
+              <div>
+                <div class="font-bold text-rose-900">申請「全部退選」（退出本學期所有自習時段）</div>
+                <div class="text-xs text-rose-700 mt-0.5">注意：依據辦法第10條及第13條，全部退選者退出後不得再加入夜讀；申請後次週起生效，生效前仍須計費且不予退費。</div>
+              </div>
+            </label>
+          </div>
 
-        <div class="pt-2 border-t border-slate-200">
-          <label class="flex items-start gap-3 cursor-pointer select-none p-3 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 transition">
-            <input type="checkbox" id="agreeCheckbox" class="mt-1 w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500" />
-            <span class="text-sm sm:text-base font-medium text-slate-900">
-              學生與家長已詳細閱讀並完全同意上述《留校自習辦法與自律公約》（含違規記點滿三次退班、請假不予退費及異動截止期限等規定）。
-            </span>
-          </label>
+          <!-- 學生基本資料 -->
+          <div>
+            <h3 class="text-base font-bold text-slate-800 border-b pb-2 mb-4">1. 學生基本資料</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">班級 <span class="text-rose-500">*</span></label>
+                <input type="text" id="studentClass" required placeholder="例如：901"
+                  class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">座號 <span class="text-rose-500">*</span></label>
+                <input type="number" id="seatNo" required min="1" max="50" placeholder="例如：15"
+                  class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">學生姓名 <span class="text-rose-500">*</span></label>
+                <input type="text" id="studentName" required placeholder="請輸入真實姓名"
+                  class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+            </div>
+          </div>
 
-          <div class="mt-4 flex flex-wrap gap-3">
-            <button type="button" id="btnStartReg" disabled
-              class="px-6 py-3 rounded-lg font-bold text-white bg-slate-400 cursor-not-allowed transition shadow-sm">
-              請先勾選同意公約後點此【報名 / 加退選】
+          <!-- 勾選自習天數 -->
+          <div id="daysSelectionBox">
+            <div class="flex flex-wrap items-center justify-between border-b pb-2 mb-4 gap-2">
+              <h3 class="text-base font-bold text-slate-800">2. 勾選參加自習天數（週一～週六）<span class="text-rose-500">*</span></h3>
+              <div class="space-x-2 text-xs">
+                <button type="button" onclick="selectAllDays(true)" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded hover:bg-indigo-100 font-medium">全選 (週一~週六)</button>
+                <button type="button" onclick="selectWeekdaysOnly()" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 font-medium">僅選平日 (週一~週五)</button>
+                <button type="button" onclick="selectAllDays(false)" class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200">清除</button>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">※ 不限參加天數，參加天數多者優先錄取。平日時間 17:40-20:30；週六時間 08:00-12:00。</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+              <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
+                <input type="checkbox" name="studyDay" value="mon" class="w-4 h-4 text-indigo-600 rounded" />
+                <span class="font-bold">週一</span>
+              </label>
+              <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
+                <input type="checkbox" name="studyDay" value="tue" class="w-4 h-4 text-indigo-600 rounded" />
+                <span class="font-bold">週二</span>
+              </label>
+              <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
+                <input type="checkbox" name="studyDay" value="wed" class="w-4 h-4 text-indigo-600 rounded" />
+                <span class="font-bold">週三</span>
+              </label>
+              <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
+                <input type="checkbox" name="studyDay" value="thu" class="w-4 h-4 text-indigo-600 rounded" />
+                <span class="font-bold">週四</span>
+              </label>
+              <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
+                <input type="checkbox" name="studyDay" value="fri" class="w-4 h-4 text-indigo-600 rounded" />
+                <span class="font-bold">週五</span>
+              </label>
+              <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-amber-200 bg-amber-50/40 rounded-xl cursor-pointer hover:border-amber-400 transition">
+                <input type="checkbox" name="studyDay" value="sat" class="w-4 h-4 text-amber-600 rounded" />
+                <span class="font-bold text-amber-900">週六</span>
+              </label>
+            </div>
+            <div class="mt-2 text-right text-sm font-semibold text-indigo-700" id="selectedCountText">目前已勾選：0 天</div>
+          </div>
+
+          <!-- 家長聯絡資料 -->
+          <div>
+            <h3 class="text-base font-bold text-slate-800 border-b pb-2 mb-4">3. 家長聯絡與通知信箱資料</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  家長姓名 <span class="text-rose-500">*</span>
+                  <span class="text-xs font-normal text-slate-500 ml-1">（填寫兩人時請以 / 分隔，例如：王大明/林小美）</span>
+                </label>
+                <input type="text" id="parentName" required placeholder="例如：王大明 或 王大明/林小美"
+                  class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  連絡電話 <span class="text-rose-500">*</span>
+                  <span class="text-xs font-normal text-slate-500 ml-1">（填寫兩人時請以 / 分隔，例如：0912345678/0987654321）</span>
+                </label>
+                <input type="text" id="parentPhone" required placeholder="例如：0912345678 或 0912345678/0987654321"
+                  class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  Email 信箱 <span class="text-rose-500">*</span>
+                  <span class="text-xs font-normal text-rose-600 ml-1">（作為接收報名副本、請假驗證碼及違規通知使用；填寫兩人時請以 / 分隔）</span>
+                </label>
+                <input type="text" id="parentEmail" required placeholder="例如：parent1@gmail.com 或 parent1@gmail.com/parent2@gmail.com"
+                  class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">備註（選填）</label>
+                <textarea id="note" rows="2" placeholder="若有特殊需求或異動說明請填寫於此..."
+                  class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- 送出提醒 -->
+          <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs text-slate-600 space-y-1">
+            <div>1. 請於資料送出前謹慎檢查，確認班級、座號及 Email 信箱無誤再行送出。</div>
+            <div>2. 資料送出後，請至登記的 Email 信箱檢查，收到系統自動寄發之確認信副本即代表報名成功。</div>
+            <div>3. 截止日前可重複送出修改，系統將自動以「最後上傳資料」覆蓋更新，並自動更新依班級座號排序總表。</div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-2">
+            <button type="submit" id="submitBtn"
+              class="w-full sm:w-auto px-8 py-3.5 bg-indigo-700 hover:bg-indigo-800 text-white font-bold rounded-xl shadow-md transition text-base">
+              確認送出報名資料
             </button>
           </div>
-        </div>
-      </div>
-    </section>
+        </form>
+      </section>
+    </div>
+  </main>
 
-    <!-- 步驟二：報名 / 加退選表單（同意公約後展開） -->
-    <section id="formSection" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div class="bg-indigo-800 text-white px-6 py-4 flex items-center justify-between">
-        <h2 class="text-lg font-bold" id="formHeaderTitle">二、填寫學生與家長報名資料</h2>
-        <span id="modeBadge" class="text-xs bg-emerald-500 text-white font-bold px-2.5 py-1 rounded">報名模式</span>
-      </div>
-
-      <form id="regForm" class="p-6 space-y-6">
-        <!-- 異動模式專屬：全部退選選項 -->
-        <div id="withdrawBox" class="hidden bg-rose-50 border border-rose-200 rounded-lg p-4">
-          <label class="flex items-start gap-3 cursor-pointer">
-            <input type="checkbox" id="isWithdrawAll" class="mt-1 w-5 h-5 text-rose-600 rounded" />
-            <div>
-              <div class="font-bold text-rose-900">申請「全部退選」（退出本學期所有自習時段）</div>
-              <div class="text-xs text-rose-700 mt-0.5">注意：依據辦法第10條及第13條，全部退選者退出後不得再加入夜讀；申請後次週起生效，生效前仍須計費且不予退費。</div>
-            </div>
-          </label>
-        </div>
-
-        <!-- 學生基本資料 -->
-        <div>
-          <h3 class="text-base font-bold text-slate-800 border-b pb-2 mb-4">1. 學生基本資料</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-1">班級 <span class="text-rose-500">*</span></label>
-              <input type="text" id="studentClass" required placeholder="例如：901"
-                class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-1">座號 <span class="text-rose-500">*</span></label>
-              <input type="number" id="seatNo" required min="1" max="50" placeholder="例如：15"
-                class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-1">學生姓名 <span class="text-rose-500">*</span></label>
-              <input type="text" id="studentName" required placeholder="請輸入真實姓名"
-                class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-            </div>
-          </div>
-        </div>
-
-        <!-- 勾選自習天數 -->
-        <div id="daysSelectionBox">
-          <div class="flex flex-wrap items-center justify-between border-b pb-2 mb-4 gap-2">
-            <h3 class="text-base font-bold text-slate-800">2. 勾選參加自習天數（週一～週六）<span class="text-rose-500">*</span></h3>
-            <div class="space-x-2 text-xs">
-              <button type="button" onclick="selectAllDays(true)" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded hover:bg-indigo-100 font-medium">全選 (週一~週六)</button>
-              <button type="button" onclick="selectWeekdaysOnly()" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 font-medium">僅選平日 (週一~週五)</button>
-              <button type="button" onclick="selectAllDays(false)" class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200">清除</button>
-            </div>
-          </div>
-          <p class="text-xs text-slate-500 mb-3">※ 不限參加天數，參加天數多者優先錄取。平日時間 17:40-20:30；週六時間 08:00-12:00。</p>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-            <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
-              <input type="checkbox" name="studyDay" value="mon" class="w-4 h-4 text-indigo-600 rounded" />
-              <span class="font-bold">週一</span>
-            </label>
-            <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
-              <input type="checkbox" name="studyDay" value="tue" class="w-4 h-4 text-indigo-600 rounded" />
-              <span class="font-bold">週二</span>
-            </label>
-            <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
-              <input type="checkbox" name="studyDay" value="wed" class="w-4 h-4 text-indigo-600 rounded" />
-              <span class="font-bold">週三</span>
-            </label>
-            <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
-              <input type="checkbox" name="studyDay" value="thu" class="w-4 h-4 text-indigo-600 rounded" />
-              <span class="font-bold">週四</span>
-            </label>
-            <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-400 transition">
-              <input type="checkbox" name="studyDay" value="fri" class="w-4 h-4 text-indigo-600 rounded" />
-              <span class="font-bold">週五</span>
-            </label>
-            <label class="day-card flex items-center justify-center gap-2 p-3 border-2 border-amber-200 bg-amber-50/40 rounded-xl cursor-pointer hover:border-amber-400 transition">
-              <input type="checkbox" name="studyDay" value="sat" class="w-4 h-4 text-amber-600 rounded" />
-              <span class="font-bold text-amber-900">週六</span>
-            </label>
-          </div>
-          <div class="mt-2 text-right text-sm font-semibold text-indigo-700" id="selectedCountText">目前已勾選：0 天</div>
-        </div>
-
-        <!-- 家長聯絡資料 -->
-        <div>
-          <h3 class="text-base font-bold text-slate-800 border-b pb-2 mb-4">3. 家長聯絡與通知信箱資料</h3>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-1">
-                家長姓名 <span class="text-rose-500">*</span>
-                <span class="text-xs font-normal text-slate-500 ml-1">（填寫兩人時請以 / 分隔，例如：王大明/林小美）</span>
-              </label>
-              <input type="text" id="parentName" required placeholder="例如：王大明 或 王大明/林小美"
-                class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" />
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-1">
-                連絡電話 <span class="text-rose-500">*</span>
-                <span class="text-xs font-normal text-slate-500 ml-1">（填寫兩人時請以 / 分隔，例如：0912345678/0987654321）</span>
-              </label>
-              <input type="text" id="parentPhone" required placeholder="例如：0912345678 或 0912345678/0987654321"
-                class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" />
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-1">
-                Email 信箱 <span class="text-rose-500">*</span>
-                <span class="text-xs font-normal text-rose-600 ml-1">（作為接收報名副本、請假驗證碼及違規通知使用；填寫兩人時請以 / 分隔）</span>
-              </label>
-              <input type="text" id="parentEmail" required placeholder="例如：parent1@gmail.com 或 parent1@gmail.com/parent2@gmail.com"
-                class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" />
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-1">備註（選填）</label>
-              <textarea id="note" rows="2" placeholder="若有特殊需求或異動說明請填寫於此..."
-                class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- 送出提醒 -->
-        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs text-slate-600 space-y-1">
-          <div>1. 請於資料送出前謹慎檢查，確認班級、座號及 Email 信箱無誤再行送出。</div>
-          <div>2. 資料送出後，請至登記的 Email 信箱檢查，收到系統自動寄發之確認信副本即代表報名成功。</div>
-          <div>3. 截止日前可重複送出修改，系統將自動以「最後上傳資料」覆蓋更新，並自動更新依班級座號排序總表。</div>
-        </div>
-
-        <div class="flex items-center justify-end gap-3 pt-2">
-          <button type="submit" id="submitBtn"
-            class="w-full sm:w-auto px-8 py-3.5 bg-indigo-700 hover:bg-indigo-800 text-white font-bold rounded-xl shadow-md transition text-base">
-            確認送出報名資料
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <!-- 教務處聯絡資訊頁尾 -->
-    <footer class="bg-white rounded-xl p-5 border border-slate-200 text-center text-sm text-slate-600 shadow-sm">
+  <!-- 教務處聯絡資訊頁尾 -->
+  <footer class="max-w-4xl w-full mx-auto px-4 pb-6">
+    <div class="bg-white rounded-xl p-5 border border-slate-200 text-center text-sm text-slate-600 shadow-sm">
       <p class="font-semibold text-slate-800" id="officeContactFooter">家長如有任何疑問，請聯絡東興國中教務處。</p>
       <p class="text-xs text-slate-400 mt-1">東興國中家長會 / 教務處 晚間暨週六自習整合系統</p>
-    </footer>
-  </main>
+    </div>
+  </footer>
 
   <script>
     // =========================================================================
@@ -230,6 +302,22 @@
       initCheckboxEvents();
       await loadSystemConfig();
     });
+
+    // 切換至「報名/加退選」頁面
+    function openRegistrationView() {
+      document.getElementById('portalHomeSection').classList.add('hidden');
+      document.getElementById('registrationView').classList.remove('hidden');
+      document.getElementById('backHomeBox').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 返回「三個按鈕首頁」
+    function showPortalHome() {
+      document.getElementById('registrationView').classList.add('hidden');
+      document.getElementById('backHomeBox').classList.add('hidden');
+      document.getElementById('portalHomeSection').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     function initCheckboxEvents() {
       const agreeCb = document.getElementById('agreeCheckbox');
