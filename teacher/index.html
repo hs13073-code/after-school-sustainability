@@ -55,7 +55,6 @@
 
     <!-- 登入後主操作區 -->
     <section id="dashboardSection" class="hidden space-y-6">
-      <!-- 老師身分列與自行修改密碼 -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <span class="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold">師</span>
@@ -76,7 +75,6 @@
         </div>
       </div>
 
-      <!-- 自行修改密碼面板 -->
       <div id="pwdModal" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-5 shadow-sm">
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-bold text-amber-950">修改輪值登入密碼</h3>
@@ -92,7 +90,6 @@
         </div>
       </div>
 
-      <!-- 功能分頁切換按鈕 -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
         <button type="button" onclick="switchTab('rollcall')" id="tabBtn-rollcall"
           class="tab-btn py-2.5 px-3 rounded-lg font-bold text-sm bg-slate-800 text-white transition">
@@ -112,7 +109,6 @@
         </button>
       </div>
 
-      <!-- 共用查詢篩選列（日期、時段類型、自習教室下拉式選單） -->
       <div id="roomFilterBar" class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
           <div>
@@ -141,7 +137,6 @@
         </div>
       </div>
 
-      <!-- 分頁 1：教室點名 -->
       <div id="tab-rollcall" class="tab-panel bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-slate-800 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-2">
           <h3 class="font-bold">教室點名作業（已自動標示家長線上請假學生）</h3>
@@ -175,7 +170,6 @@
         </div>
       </div>
 
-      <!-- 分頁 2：違規登記（記點1次，滿3點退班） -->
       <div id="tab-violation" class="tab-panel hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-rose-800 text-white px-6 py-4">
           <h3 class="font-bold">違規登記（每次記點 1 點；累計滿 3 點自動退班並寄出退班門檻通知信）</h3>
@@ -238,7 +232,6 @@
         </form>
       </div>
 
-      <!-- 分頁 3：查詢違規紀錄 -->
       <div id="tab-records" class="tab-panel hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-slate-800 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-2">
           <h3 class="font-bold">違規紀錄與累計點數查詢</h3>
@@ -284,7 +277,6 @@
         </div>
       </div>
 
-      <!-- 分頁 4：當日請假名單總覽 -->
       <div id="tab-leaves" class="tab-panel hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-teal-800 text-white px-6 py-4 flex items-center justify-between">
           <h3 class="font-bold">當日請假名單（依上方選擇之日期與自習教室篩選）</h3>
@@ -317,7 +309,7 @@
     // =========================================================================
     // 【重要設定】請將下方網址替換為您部署 Google Apps Script 後取得的 Web App URL
     // =========================================================================
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzG-bArC4WLRFNF6mVtRu8uLspQjVyMwOdT-zvaNODLfl2-jeRntmhkuqh-A4n4rsRH/exec';
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzQ_4PLTzbhqzGwcV3VOufuimcE95lRbkre9DsGTXt6klkC8G-iB5_Ah-4KCodTeKdX/exec';
 
     let sysConfig = null;
     let currentTeacher = null;
@@ -339,7 +331,7 @@
     });
 
     async function callGasApi(payload) {
-      if (GAS_API_URL === 'https://script.google.com/macros/s/AKfycbzG-bArC4WLRFNF6mVtRu8uLspQjVyMwOdT-zvaNODLfl2-jeRntmhkuqh-A4n4rsRH/exec') {
+      if (GAS_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
         throw new Error('尚未設定 GAS_API_URL，請先部署 Apps Script 並填入網址。');
       }
       const res = await fetch(GAS_API_URL, {
@@ -350,7 +342,6 @@
       return await res.json();
     }
 
-    // 載入輪值人員下拉式選單
     async function loadTeacherDropdown() {
       const sel = document.getElementById('tUsername');
       try {

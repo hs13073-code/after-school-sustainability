@@ -294,7 +294,7 @@
     // =========================================================================
     // 【重要設定】請將下方網址替換為您部署 Google Apps Script 後取得的 Web App URL
     // =========================================================================
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzG-bArC4WLRFNF6mVtRu8uLspQjVyMwOdT-zvaNODLfl2-jeRntmhkuqh-A4n4rsRH/exec';
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzQ_4PLTzbhqzGwcV3VOufuimcE95lRbkre9DsGTXt6klkC8G-iB5_Ah-4KCodTeKdX/exec';
 
     let systemState = null;
 
@@ -303,7 +303,6 @@
       await loadSystemConfig();
     });
 
-    // 切換至「報名/加退選」頁面
     function openRegistrationView() {
       document.getElementById('portalHomeSection').classList.add('hidden');
       document.getElementById('registrationView').classList.remove('hidden');
@@ -311,7 +310,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 返回「三個按鈕首頁」
     function showPortalHome() {
       document.getElementById('registrationView').classList.add('hidden');
       document.getElementById('backHomeBox').classList.add('hidden');

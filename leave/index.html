@@ -83,7 +83,6 @@
 
     <!-- 步驟二：學生資料與請假操作區（驗證通過後顯示） -->
     <section id="leaveSection" class="hidden space-y-6">
-      <!-- 學生報名狀態卡片 -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-3 mb-4">
           <h2 class="text-lg font-bold text-slate-800">二、學生自習報名資訊確認</h2>
@@ -105,13 +104,11 @@
         </div>
       </div>
 
-      <!-- 選擇請假日期與事由 -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-teal-800 text-white px-6 py-4">
           <h2 class="text-lg font-bold">三、新增請假日期與事由</h2>
         </div>
         <div class="p-6 space-y-5">
-          <!-- 日期選擇器與加入清單 -->
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1">1. 選擇請假日期並加入清單（可一次加入多天）</label>
             <div class="flex flex-wrap items-center gap-3">
@@ -125,7 +122,6 @@
             <p id="dateCheckFeedback" class="text-sm mt-2 font-medium hidden"></p>
           </div>
 
-          <!-- 已加入的請假日期標籤區 -->
           <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
             <div class="text-xs font-semibold text-slate-500 mb-2">本次預計請假日期清單：</div>
             <div id="selectedDatesContainer" class="flex flex-wrap gap-2">
@@ -133,7 +129,6 @@
             </div>
           </div>
 
-          <!-- 請假事由下拉式選單 -->
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1">2. 請假事由 <span class="text-rose-500">*</span></label>
             <select id="leaveReason"
@@ -148,7 +143,6 @@
             </select>
           </div>
 
-          <!-- 備註說明欄 -->
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1">3. 備註說明欄</label>
             <textarea id="leaveNote" rows="3" placeholder="請補充說明請假原因或家長聯絡事項（選填）..."
@@ -164,7 +158,6 @@
         </div>
       </div>
 
-      <!-- 歷史請假紀錄查詢 -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h3 class="text-base font-bold text-slate-800 mb-3">已核備之歷史請假紀錄</h3>
         <div class="overflow-x-auto">
@@ -185,7 +178,6 @@
       </div>
     </section>
 
-    <!-- 頁尾教務處聯絡資訊 -->
     <footer class="bg-white rounded-xl p-5 border border-slate-200 text-center text-sm text-slate-600 shadow-sm">
       <p class="font-bold text-rose-700" id="officeContactFooter">家長如有疑問或超過請假截止時間，請直接聯絡東興國中教務處。</p>
     </footer>
@@ -195,7 +187,7 @@
     // =========================================================================
     // 【重要設定】請將下方網址替換為您部署 Google Apps Script 後取得的 Web App URL
     // =========================================================================
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzG-bArC4WLRFNF6mVtRu8uLspQjVyMwOdT-zvaNODLfl2-jeRntmhkuqh-A4n4rsRH/exec';
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzQ_4PLTzbhqzGwcV3VOufuimcE95lRbkre9DsGTXt6klkC8G-iB5_Ah-4KCodTeKdX/exec';
 
     let sysConfig = null;
     let suspendedMap = {};
@@ -366,13 +358,11 @@
         return;
       }
 
-      // 1. 檢查是否為暫停自習日
       if (suspendedMap[dateStr]) {
         showDateFeedback(`❌ 無法加入：${dateStr} 為暫停自習日（${suspendedMap[dateStr]}），無需請假。`, true);
         return;
       }
 
-      // 2. 檢查該生是否報名該星期
       const dObj = new Date(dateStr.replace(/-/g, '/') + ' 12:00:00');
       const dow = dObj.getDay();
       if (!verifiedStudent.days[dow]) {
@@ -380,7 +370,6 @@
         return;
       }
 
-      // 3. 檢查是否已過期或超過當日請假截止時間
       const now = new Date();
       const todayStr = now.getFullYear() + '-' +
         String(now.getMonth() + 1).padStart(2, '0') + '-' +
@@ -401,7 +390,6 @@
         }
       }
 
-      // 4. 檢查重複
       if (existingLeaveDates.has(dateStr)) {
         showDateFeedback(`⚠ ${dateStr} 已經請過假了，無需重複加入。`, true);
         return;
@@ -472,7 +460,7 @@
           renderSelectedDates();
           document.getElementById('leaveReason').value = '';
           document.getElementById('leaveNote').value = '';
-          await handleVerifyOtp(); // 重新整理歷史請假清單
+          await handleVerifyOtp();
         }
       } catch (err) {
         alert('送出失敗：' + err.message);
