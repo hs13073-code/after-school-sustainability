@@ -27,20 +27,22 @@
   </header>
 
   <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
-    <!-- 輪值老師登入區塊 -->
+    <!-- 輪值老師登入區塊（下拉式選擇人員 + 輸入密碼） -->
     <section id="loginSection" class="max-w-md mx-auto bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden mt-6">
       <div class="bg-slate-800 text-white px-6 py-4">
         <h2 class="text-lg font-bold">輪值人員登入</h2>
-        <p class="text-xs text-slate-300 mt-0.5">請使用教務處配發之輪值帳號與密碼登入</p>
+        <p class="text-xs text-slate-300 mt-0.5">請先由下拉選單選擇輪值人員，再輸入密碼登入</p>
       </div>
       <form id="loginForm" class="p-6 space-y-4">
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">輪值帳號</label>
-          <input type="text" id="tUsername" required placeholder="例如：teacher01"
-            class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-700" />
+          <label class="block text-sm font-semibold text-slate-700 mb-1">選擇輪值人員 <span class="text-rose-500">*</span></label>
+          <select id="tUsername" required
+            class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-slate-700">
+            <option value="">正在載入輪值人員名單...</option>
+          </select>
         </div>
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">登入密碼</label>
+          <label class="block text-sm font-semibold text-slate-700 mb-1">登入密碼 <span class="text-rose-500">*</span></label>
           <input type="password" id="tPassword" required placeholder="請輸入密碼"
             class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-700" />
         </div>
@@ -282,7 +284,7 @@
         </div>
       </div>
 
-      <!-- 分頁 4：當日請假名單總覽（依夜讀與週六教室下拉式選單） -->
+      <!-- 分頁 4：當日請假名單總覽 -->
       <div id="tab-leaves" class="tab-panel hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-teal-800 text-white px-6 py-4 flex items-center justify-between">
           <h3 class="font-bold">當日請假名單（依上方選擇之日期與自習教室篩選）</h3>
@@ -315,7 +317,7 @@
     // =========================================================================
     // 【重要設定】請將下方網址替換為您部署 Google Apps Script 後取得的 Web App URL
     // =========================================================================
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzG-bArC4WLRFNF6mVtRu8uLspQjVyMwOdT-zvaNODLfl2-jeRntmhkuqh-A4n4rsRH/exec';
+    const GAS_API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
 
     let sysConfig = null;
     let currentTeacher = null;
@@ -333,11 +335,11 @@
 
       document.getElementById('loginForm').addEventListener('submit', handleLogin);
       document.getElementById('violationForm').addEventListener('submit', handleSubmitViolation);
-      await loadSystemConfig();
+      await Promise.all([loadSystemConfig(), loadTeacherDropdown()]);
     });
 
     async function callGasApi(payload) {
-      if (GAS_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+      if (GAS_API_URL === 'https://script.google.com/macros/s/AKfycbzG-bArC4WLRFNF6mVtRu8uLspQjVyMwOdT-zvaNODLfl2-jeRntmhkuqh-A4n4rsRH/exec') {
         throw new Error('尚未設定 GAS_API_URL，請先部署 Apps Script 並填入網址。');
       }
       const res = await fetch(GAS_API_URL, {
@@ -346,6 +348,22 @@
         body: JSON.stringify(payload)
       });
       return await res.json();
+    }
+
+    // 載入輪值人員下拉式選單
+    async function loadTeacherDropdown() {
+      const sel = document.getElementById('tUsername');
+      try {
+        const res = await callGasApi({ action: 'getTeacherList' });
+        if (!res.success || !res.teachers || res.teachers.length === 0) {
+          sel.innerHTML = '<option value="">目前無啟用中的輪值人員帳號</option>';
+          return;
+        }
+        sel.innerHTML = '<option value="">-- 請選擇輪值人員 --</option>' +
+          res.teachers.map(t => `<option value="${t.username}">${t.name}（${t.username}）</option>`).join('');
+      } catch (e) {
+        sel.innerHTML = '<option value="">無法載入輪值人員名單，請確認連線設定</option>';
+      }
     }
 
     async function loadSystemConfig() {
@@ -383,6 +401,11 @@
       const btn = document.getElementById('btnLogin');
       const username = document.getElementById('tUsername').value.trim();
       const password = document.getElementById('tPassword').value.trim();
+
+      if (!username) {
+        alert('請先從下拉選單選擇輪值人員。');
+        return;
+      }
 
       btn.disabled = true;
       btn.textContent = '登入驗證中...';
